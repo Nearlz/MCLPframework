@@ -50,7 +50,9 @@ class Aabb:
     l: int; w: int; h: int
     manhattan: int
     volume: int
-    covered_surface = 0
+    covered_surface: int
+    covered_surface_face: dict()
+    
 
     def __init__(self, xmin, xmax, ymin, ymax, zmin, zmax):
         self.xmin = xmin; self.xmax = xmax
@@ -59,6 +61,8 @@ class Aabb:
         self.volume = (xmax-xmin)*(ymax-ymin)*(zmax-zmin)
         self.l = xmax-xmin; self.w = ymax-ymin; self.h = zmax-zmin
         self.manhattan = self.xmin + self.ymin + self.zmin
+        self.covered_surface = 0
+        self.covered_surface_face = {'X1':0,'X2':0,'Y1':0,'Y2':0,'Z1':0,'Z2':0}
     
     # returns true if aabb is inside self
     def strict_intersects(self, aabb):
@@ -122,7 +126,8 @@ class Aabb:
     zmin: int; zmax: int
     l: int; w: int; h: int
     volume: int
-    covered_surface = 0
+    covered_surface: int
+    covered_surface_face: dict()
 
     def __init__(self, xmin, xmax, ymin, ymax, zmin, zmax):
         self.xmin = xmin; self.xmax = xmax
@@ -130,6 +135,8 @@ class Aabb:
         self.zmin = zmin; self.zmax = zmax
         self.volume = (xmax-xmin)*(ymax-ymin)*(zmax-zmin)
         self.l = xmax-xmin; self.w = ymax-ymin; self.h = zmax-zmin
+        self.covered_surface = 0
+        self.covered_surface_face = {'X1':0,'X2':0,'Y1':0,'Y2':0,'Z1':0,'Z2':0}
     
     # returns true if aabb is inside self
     def strict_intersects(self, aabb):
