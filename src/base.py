@@ -1,3 +1,5 @@
+from .vcs_function import CS_function
+
 class Boxtype:
     id: int
     l: int; w: int; h: int
@@ -48,6 +50,7 @@ class Aabb:
     l: int; w: int; h: int
     manhattan: int
     volume: int
+    covered_surface = 0
 
     def __init__(self, xmin, xmax, ymin, ymax, zmin, zmax):
         self.xmin = xmin; self.xmax = xmax
@@ -119,6 +122,7 @@ class Aabb:
     zmin: int; zmax: int
     l: int; w: int; h: int
     volume: int
+    covered_surface = 0
 
     def __init__(self, xmin, xmax, ymin, ymax, zmin, zmax):
         self.xmin = xmin; self.xmax = xmax
