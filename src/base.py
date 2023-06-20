@@ -1,4 +1,3 @@
-from .vcs_function import CS_function
 
 class Boxtype:
     id: int
@@ -459,6 +458,12 @@ class BlockList(list):
                 #self.append(Block(item,"lwh"))
                 self.append(Block(item,"wlh"))
 
+    def possible_blocks(blocks,maxL,maxW,maxH):
+        p_block = []
+        for block in blocks:
+            if block.w <= maxW and block.l <= maxL and block.h <= maxH:
+                p_block.append(block)
+        return p_block
 
     def largest(blocks, maxL, maxW, maxH):
         largest = None
