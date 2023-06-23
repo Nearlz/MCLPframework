@@ -99,23 +99,23 @@ class Aabb:
         return "Aabb: xmin: " + str(self.xmin) + " xmax: " + str(self.xmax) + " ymin: " + str(self.ymin) + " ymax: " + str(self.ymax) + " zmin: " + str(self.zmin) + " zmax: " + str(self.zmax)
 
 
-# Items are pairs (Boxtype, quantity)
-class Itemdict(dict):
-  def __iadd__(self, other):
-      for key in other:
-          if key in self:
-              self[key] += other[key]
-          else:
-              self[key] = other[key]
-      return self
+# # Items are pairs (Boxtype, quantity)
+# class Itemdict(dict):
+#   def __iadd__(self, other):
+#       for key in other:
+#           if key in self:
+#               self[key] += other[key]
+#           else:
+#               self[key] = other[key]
+#       return self
 
-  def __isub__(self, other):
-      for key in other:
-          if key in self:
-              self[key] -= other[key]
-          else:
-              self[key] = -other[key]
-      return self
+#   def __isub__(self, other):
+#       for key in other:
+#           if key in self:
+#               self[key] -= other[key]
+#           else:
+#               self[key] = -other[key]
+#       return self
 
 #An Aabb is cuboid+location
 #Useful for representing free space cuboids and placed blocks
