@@ -97,6 +97,5 @@ def plot_container(cont_dim, box_dims):
     )
 
     # Renderizando grafico
-    #fig.write_image(filename)
     iplot(fig, filename="holo")
     #fig.show()

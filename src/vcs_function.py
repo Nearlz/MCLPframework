@@ -1,6 +1,8 @@
 from .base import Aabb
+from .restrictions import center_of_gravity
 
-def CS_function(blocks,space,p,stored_blocks):
+def CS_function(blocks,space,p,container):
+    stored_blocks = container.aabbs
     block_value = [0] * len(blocks)
     for i,possible_block in enumerate(blocks,0):
         x,y,z = space.corner_point
@@ -35,12 +37,14 @@ def CS_function(blocks,space,p,stored_blocks):
             elif abs(block.zmin - last.zmax) <= (block.zmax - block.zmin) * p and ((block.ymin < last.ymax and block.ymax > last.ymin ) and (block.xmin < last.xmax and block.xmax > last.xmin )):
                 block_value[i]+= ((y_diff_min-y_diff_max) * (x_diff_min-x_diff_max))
 
-            elif block.xmin <= (block.xmax - block.xmin) * p or abs(block.xmax - space.l) <= (block.xmax - block.xmin) * p:
-                block_value[i]+= ((block.ymax-block.ymin) * (block.zmax-block.zmin))
-            elif block.ymin <= (block.ymax - block.ymin) * p or abs(block.ymax - space.w) <= (block.ymax - block.ymin) * p:
-                block_value[i]+= ((block.xmax-block.xmin) * (block.zmax-block.zmin))
-            elif block.zmin <= (block.zmax - block.zmin) * p or abs(block.zmax - space.h) <= (block.zmax - block.zmin) * p:
-                block_value[i]+= ((block.ymax-block.ymin) * (block.xmax-block.xmin))
+        if block.xmin <= (block.xmax - block.xmin) * p or abs(block.xmax - space.l) <= (block.xmax - block.xmin) * p:
+            block_value[i]+= ((block.ymax-block.ymin) * (block.zmax-block.zmin))
+        if block.ymin <= (block.ymax - block.ymin) * p or abs(block.ymax - space.w) <= (block.ymax - block.ymin) * p:
+            block_value[i]+= ((block.xmax-block.xmin) * (block.zmax-block.zmin))
+        if block.zmin <= (block.zmax - block.zmin) * p or abs(block.zmax - space.h) <= (block.zmax - block.zmin) * p:
+            block_value[i]+= ((block.ymax-block.ymin) * (block.xmax-block.xmin))
+
+        block_value[i]/=(possible_block.l * possible_block.w) * 2 + (possible_block.l * possible_block.h) * 2 + (possible_block.w * possible_block.h) * 2
     
     return block_value
 
@@ -65,7 +69,7 @@ def maximize_axis(limit,items):
     else:
         return 0
 
-def loss_function(p_blocks,space,stored_blocks,items):
+def loss_function(p_blocks,space,items):
 
     V_loss = []
 
@@ -99,21 +103,30 @@ def loss_function(p_blocks,space,stored_blocks,items):
     return V_loss
 
 
-def eval_function(blocks,space,stored_blocks, p:float,items) :
+def n(p_blocks):
+    n_boxes = []
+    for block in p_blocks:
+        n_box = sum(block.items.values())
+        n_boxes.append(float(n_box))
+    return n_boxes
+
+
+def eval_function(blocks,space,container, params,items) :
     p_blocks = blocks.possible_blocks(space.l, space.w, space.h)
 
-    # Nb = [x.items for x in p_blocks if len(x.items) != 1]
-    # print(Nb)
+    alpha = params[0]; beta = params[1]; gamma = params[2]; delta = params[3]; p = params[4]
 
     V = [(x.l * x.w * x.l) for x in p_blocks]
 
-    V_loss = loss_function(p_blocks,space,stored_blocks,items)
+    V_loss = loss_function(p_blocks,space,items)
 
-    CS = CS_function(p_blocks,space,p,stored_blocks)
+    CS = CS_function(p_blocks,space,p,container=container)
 
-    print(f'{len(V)}  {len(V_loss)}  {len(CS)}')
+    N_b = n(p_blocks)
 
-    total = [x * y * z for x, y, z in zip(V,V_loss,CS)]
+    CG = center_of_gravity(container,p_blocks,space)
+
+    total = [w * x**alpha * y**beta * z**-gamma * a**delta for w, x, y, z, a in zip(V,CS,V_loss,N_b, CG)]
 
     index = total.index(max(total))
 

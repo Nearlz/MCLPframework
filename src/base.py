@@ -49,6 +49,7 @@ class Aabb:
     l: int; w: int; h: int
     manhattan: int
     volume: int
+    weight: int
     covered_surface: int
     covered_surface_face: dict()
     
@@ -125,6 +126,7 @@ class Aabb:
     zmin: int; zmax: int
     l: int; w: int; h: int
     volume: int
+    weight: int
     covered_surface: int
     covered_surface_face: dict()
 
@@ -348,7 +350,10 @@ class Block:
         if y == space.ymax: y -= block.w
         if z == space.zmax: z -= block.h
 
-        self.aabbs.append(Aabb(x,x+block.l,y,y+block.w,z,z+block.h))
+        added_block = Aabb(x,x+block.l,y,y+block.w,z,z+block.h)
+        added_block.weight = block.weight
+
+        self.aabbs.append(added_block)
         self.occupied_volume += block.occupied_volume
         self.weight += block.weight
         self.items += block.items
