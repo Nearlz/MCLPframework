@@ -4,13 +4,15 @@ class Boxtype:
     l: int; w: int; h: int
     rot_l: bool; rot_w: bool; rot_h: bool
     weight: int
+    stacking_weight_resistance: int
     volume: int
 
-    def __init__(self, id, l, w, h, rot_l=True, rot_w=True, rot_h=True, weight=1):
+    def __init__(self, id, l, w, h, rot_l=True, rot_w=True, rot_h=True, weight=1, stacking_weight_resistance=1000):
         self.id = id
         self.l = l; self.w = w; self.h = h
         self.rot_l, self.rot_w, self.rot_h = rot_l, rot_w, rot_h
         self.weight = weight
+        self.stacking_weight_resistance= stacking_weight_resistance
         self.volume = l*w*h
 
 # Items are pairs (Boxtype, quantity)
@@ -50,6 +52,7 @@ class Aabb:
     manhattan: int
     volume: int
     weight: int
+    stacking_weight_resistance: int
     covered_surface: int
     covered_surface_face: dict()
     
@@ -288,6 +291,7 @@ class Block:
     l: int; w: int; h: int
     occupied_volume: int
     weight: int
+    stacking_weight_resistance: int
     volume: int
     items: Itemdict() # Boxtype: int
     free_space: FreeSpace() # list of free spaces
@@ -352,6 +356,8 @@ class Block:
 
         added_block = Aabb(x,x+block.l,y,y+block.w,z,z+block.h)
         added_block.weight = block.weight
+
+        # added_block.weight = block.stacking_weight_resistance
 
         self.aabbs.append(added_block)
         self.occupied_volume += block.occupied_volume

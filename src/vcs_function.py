@@ -102,14 +102,12 @@ def loss_function(p_blocks,space,items):
         V_loss.append(V_i)
     return V_loss
 
-
 def n(p_blocks):
     n_boxes = []
     for block in p_blocks:
         n_box = sum(block.items.values())
         n_boxes.append(float(n_box))
     return n_boxes
-
 
 def eval_function(blocks,space,container, params,items) :
     p_blocks = blocks.possible_blocks(space.l, space.w, space.h)
