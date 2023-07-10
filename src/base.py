@@ -130,6 +130,7 @@ class Aabb:
     l: int; w: int; h: int
     volume: int
     weight: int
+    stacking_weight_resistance: int
     covered_surface: int
     covered_surface_face: dict()
 
@@ -302,7 +303,9 @@ class Block:
     def __copy__(self):
         return Block(copy_block=self) 
 
-    def __init__(self, boxtype=None, rot=True, l=0, w=0, h=0, copy_block=None):
+    def __init__(self, boxtype=None, rot=True, l=0, w=0, h=0, weight=1, stacking_weight_resistance=2, copy_block=None):
+
+        print(f'w: {weight}   swr: {stacking_weight_resistance}')
 
         if copy_block is not None:
             # copy blocks and items
@@ -310,6 +313,7 @@ class Block:
             self.w = copy_block.w
             self.h = copy_block.h
             self.weight = copy_block.weight
+            self.stacking_weight_resistance = copy_block.stacking_weight_resistance
             self.occupied_volume = copy_block.occupied_volume
             self.volume = copy_block.volume
             self.items = Itemdict()
@@ -332,6 +336,7 @@ class Block:
           elif rot[2]=='h': self.h = boxtype.h
           
           self.weight = boxtype.weight
+          self.stacking_weight_resistance = boxtype.stacking_weight_resistance
           self.occupied_volume = boxtype.volume
           self.volume = boxtype.volume
           self.items = Itemdict()
@@ -342,7 +347,8 @@ class Block:
         else: 
           self.l = l; self.w = w; self.h = h
           self.occupied_volume = 0
-          self.weight = 0
+          self.weight = weight
+          self.stacking_weight_resistance = stacking_weight_resistance
           self.items = Itemdict()
           self.volume = l*w*h
           self.aabbs = []
@@ -356,6 +362,7 @@ class Block:
 
         added_block = Aabb(x,x+block.l,y,y+block.w,z,z+block.h)
         added_block.weight = block.weight
+        added_block.stacking_weight_resistance = block.stacking_weight_resistance
 
         # added_block.weight = block.stacking_weight_resistance
 
@@ -473,8 +480,6 @@ class BlockList(list):
         p_block = []
         for block in blocks:
             if block.w <= maxW and block.l <= maxL and block.h <= maxH:
-                print("#############")
-                print(block)
                 #TO DO: agregar capacidad de peso a caja, cambiar criterio de agrupacion, cambiar dataset
                 p_block.append(block)
         return p_block
