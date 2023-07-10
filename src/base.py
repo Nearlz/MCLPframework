@@ -467,6 +467,9 @@ class BlockList(list):
         p_block = []
         for block in blocks:
             if block.w <= maxW and block.l <= maxL and block.h <= maxH:
+                print("#############")
+                print(block)
+                #TO DO: agregar capacidad de peso a caja, cambiar criterio de agrupacion, cambiar dataset
                 p_block.append(block)
         return p_block
 
