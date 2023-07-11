@@ -380,6 +380,7 @@ class Block:
             if (self.occupied_volume + block.occupied_volume)/volume < min_fr: return False
             self.weight += block.weight
             self.occupied_volume += block.occupied_volume
+            self.stacking_weight_resistance = min([self.stacking_weight_resistance,block.stacking_weight_resistance])
             self.volume = volume
             self.items += block.items
         elif dim=='y':
@@ -387,6 +388,7 @@ class Block:
             if (self.occupied_volume + block.occupied_volume)/volume < min_fr: return False
             self.weight += block.weight
             self.occupied_volume += block.occupied_volume
+            self.stacking_weight_resistance = min([self.stacking_weight_resistance,block.stacking_weight_resistance])
             self.volume = volume
             self.items += block.items
         elif dim=='z':
@@ -394,6 +396,7 @@ class Block:
             if (self.occupied_volume + block.occupied_volume)/volume < min_fr: return False
             self.weight += block.weight
             self.occupied_volume += block.occupied_volume
+            self.stacking_weight_resistance = min([self.stacking_weight_resistance,block.stacking_weight_resistance])
             self.volume = volume
             self.items += block.items
         self.l = l; self.w = w; self.h = h
