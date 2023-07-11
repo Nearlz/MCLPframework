@@ -380,8 +380,8 @@ class Block:
             if (self.occupied_volume + block.occupied_volume)/volume < min_fr: return False
             self.weight += block.weight
             self.occupied_volume += block.occupied_volume
-            self.stacking_weight_resistance = min([self.stacking_weight_resistance,block.stacking_weight_resistance])
             self.volume = volume
+            self.stacking_weight_resistance = min([self.stacking_weight_resistance,block.stacking_weight_resistance])
             self.items += block.items
         elif dim=='y':
             l = max(self.l, block.l); w = self.w + block.w; h = max(self.h, block.h); volume = w*l*h
@@ -493,16 +493,15 @@ class BlockList(list):
     def eval_weight_restriction(block_test, under_blocks, weight):
         for under_block in under_blocks:
             #calcular superficie de insicion 
-            print("porcentaje de superficie incidida: ", BlockList.surface_percent(block_test,under_block))
-
+            S_percent = BlockList.surface_percent(block_test,under_block)
             #restar weight * SI a resistencia de cada bloque
-            # print(block_test)
-            # print("peso: ", weight)
-            # print("resistencia: ", under_block.stacking_weight_resistance)
-            # if(under_block.stacking_weight_resistance - weight <= 0): 
-            #     print("No cumple restriccion!!!!")
 
-        return False
+            if( under_block.stacking_weight_resistance - int(weight* S_percent) < 0):
+                # print("bloque incumple peso")
+                return False
+            
+            under_block.stacking_weight_resistance -= int(weight* S_percent) #agregar identificador
+        return True
 
     @staticmethod
     def blocks_weight_supported(p_block ,aabbs, space):
@@ -530,6 +529,7 @@ class BlockList(list):
             # print(len(under_blocks))
 
             if ( BlockList.eval_weight_restriction(block_test, under_blocks, block.weight)):
+                print("Bloque agregado!!")
                 p_blocks_supported.append(block)
 
         return p_blocks_supported
@@ -550,8 +550,9 @@ class BlockList(list):
         
         #calcular si los bloques cumplen la restriccion de peso soportado
         aabbs = container.aabbs
-        blocks.blocks_weight_supported(p_block,container.aabbs, space)
-
+        p_block_w_supported = blocks.blocks_weight_supported(p_block,container.aabbs, space)
+        print(len(p_block_w_supported))
+        print(len(p_block))
         return p_block
 
     def largest(blocks, maxL, maxW, maxH):
