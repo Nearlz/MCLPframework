@@ -305,7 +305,7 @@ class Block:
 
     def __init__(self, boxtype=None, rot=True, l=0, w=0, h=0, weight=1, stacking_weight_resistance=2, copy_block=None):
 
-        print(f'w: {weight}   swr: {stacking_weight_resistance}')
+        # print(f'w: {weight}   swr: {stacking_weight_resistance}')
 
         if copy_block is not None:
             # copy blocks and items
@@ -476,12 +476,79 @@ class BlockList(list):
                 #self.append(Block(item,"lwh"))
                 self.append(Block(item,"wlh"))
 
-    def possible_blocks(blocks,maxL,maxW,maxH):
+    @staticmethod
+    def surface_percent(block, last):
+        x_diff_max = max([block.xmin,last.xmin])
+        x_diff_min = min([block.xmax,last.xmax])
+        y_diff_max = max([block.ymin,last.ymin])
+        y_diff_min = min([block.ymax,last.ymax])
+
+        return ((y_diff_min-y_diff_max) * (x_diff_min-x_diff_max)) / ( (block.xmax - block.xmin) * (block.ymax - block.ymin) )
+
+    #entrega si el bloque posible cuple o no con la restriccion de peso
+    @staticmethod
+    def eval_weight_restriction(block_test, under_blocks, weight):
+        for under_block in under_blocks:
+            #calcular superficie de insicion 
+            print("porcentaje de superficie incidida: ", BlockList.surface_percent(block_test,under_block))
+
+            #restar weight * SI a resistencia de cada bloque
+            # print(block_test)
+            # print("peso: ", weight)
+            # print("resistencia: ", under_block.stacking_weight_resistance)
+            # if(under_block.stacking_weight_resistance - weight <= 0): 
+            #     print("No cumple restriccion!!!!")
+
+        return False
+
+    @staticmethod
+    def blocks_weight_supported(p_block ,aabbs, space):
+        p_blocks_supported = []
+        # Cada bloque posible
+        for block in p_block:
+            under_blocks = []
+            x,y,z = space.corner_point
+            if x == space.xmax: x -= block.l
+            if y == space.ymax: y -= block.w
+            if z == space.zmax: z -= block.h
+            block_test = Aabb(x,x+block.l,y,y+block.w,z,z+block.h)
+            
+            # Almacenar aabbs que estan debajo del bloque posible
+            for aabb in aabbs:
+                # Si el aabb esta debajo, se agrega (se prueban dimenciones con block_test de tipo Aabb)
+                # Verificar si el AABB está debajo de block_test y dentro de sus dimensiones x y z
+                if ( aabb.zmax <= block_test.zmin ):
+                    if ((block_test.xmin <= aabb.xmin <= block_test.xmax or block_test.xmin <= aabb.xmax <= block_test.xmax ) and
+                        (block_test.ymin <= aabb.ymin <= block_test.ymax or block_test.ymin <= aabb.ymax <= block_test.ymax )): 
+                        under_blocks.append(aabb)
+
+            #se llama a funcion eval_weight_restriction para ver si el bloque posible se agrega a p_blocks_supported
+            # print("block altura: ",block_test.zmin)
+            # print(len(under_blocks))
+
+            if ( BlockList.eval_weight_restriction(block_test, under_blocks, block.weight)):
+                p_blocks_supported.append(block)
+
+        return p_blocks_supported
+
+        
+        #ver bloques que coinciden
+            #aabbs tiene indices y capacidad
+            #cada p_block tiene peso y dimensiones, pero no posible localizacion
+        #restar swr, si alguno de ellos es <0 el bloque no se incluye
+        #retornar lista de bloques que cumplen con restriccion
+
+    def possible_blocks(blocks,maxL,maxW,maxH, container, space): #cambiar si considerar  
+        a = 0
         p_block = []
         for block in blocks:
             if block.w <= maxW and block.l <= maxL and block.h <= maxH:
-                #TO DO: agregar capacidad de peso a caja, cambiar criterio de agrupacion, cambiar dataset
                 p_block.append(block)
+        
+        #calcular si los bloques cumplen la restriccion de peso soportado
+        aabbs = container.aabbs
+        blocks.blocks_weight_supported(p_block,container.aabbs, space)
+
         return p_block
 
     def largest(blocks, maxL, maxW, maxH):

@@ -110,7 +110,7 @@ def n(p_blocks):
     return n_boxes
 
 def eval_function(blocks,space,container, params,items) :
-    p_blocks = blocks.possible_blocks(space.l, space.w, space.h)
+    p_blocks = blocks.possible_blocks(space.l, space.w, space.h, container, space)
 
     alpha = params[0]; beta = params[1]; gamma = params[2]; delta = params[3]; p = params[4]
 
