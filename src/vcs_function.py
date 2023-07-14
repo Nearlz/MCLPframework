@@ -124,7 +124,9 @@ def eval_function(blocks,space,container, params,items) :
 
     CG = center_of_gravity(container,p_blocks,space)
 
-    total = [w * x**alpha * y**beta * z**-gamma * -(a**delta) for w, x, y, z, a in zip(V,CS,V_loss,N_b, CG)]
+    total = [w * x**alpha * y**beta * z**-gamma * (1-1/(1+a**delta)) for w, x, y, z, a in zip(V,CS,V_loss,N_b, CG)]
+
+    # * - (a**delta)
 
     index = total.index(max(total))
 
