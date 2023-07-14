@@ -529,7 +529,6 @@ class BlockList(list):
             # print(len(under_blocks))
 
             if ( BlockList.eval_weight_restriction(block_test, under_blocks, block.weight)):
-                print("Bloque agregado!!")
                 p_blocks_supported.append(block)
 
         return p_blocks_supported
@@ -551,8 +550,6 @@ class BlockList(list):
         #calcular si los bloques cumplen la restriccion de peso soportado
         aabbs = container.aabbs
         p_block_w_supported = blocks.blocks_weight_supported(p_block,container.aabbs, space)
-        print(len(p_block_w_supported))
-        print(len(p_block))
         return p_block
 
     def largest(blocks, maxL, maxW, maxH):
