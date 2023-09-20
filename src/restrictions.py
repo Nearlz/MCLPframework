@@ -69,6 +69,11 @@ def center_of_gravity(container: Block,p_blocks: list = None,space: Aabb = None)
         distance = math.sqrt((center_x - container_center_x)**2 + (center_y - container_center_y)**2)
     return distance
 
+def distance_cg_is_valid(distance, slack):
+    if distance <= slack:
+        return True
+    return False
+
 
 def max_weight_supported(containers: list[Block], max_supported_by_container: int) -> bool:
     total_weight = 0

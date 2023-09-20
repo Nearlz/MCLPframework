@@ -111,10 +111,19 @@ def n(p_blocks):
 
 def eval_function(blocks,space,container, params,items) :
     p_blocks = blocks.possible_blocks(space.l, space.w, space.h, container, space)
+    # print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+    # print(p_blocks[0])
+
+    # print("BLOCKS aabbs in container")
+    # for aabb in container.aabbs:
+    #     print(aabb)
 
     alpha = params[0]; beta = params[1]; gamma = params[2]; delta = params[3]; p = params[4]
 
     V = [(x.l * x.w * x.l) for x in p_blocks]
+
+    # print(V)
+    # print("constante k: ", V/container.volume)
 
     V_loss = loss_function(p_blocks,space,items)
 
@@ -124,11 +133,17 @@ def eval_function(blocks,space,container, params,items) :
 
     CG = center_of_gravity(container,p_blocks,space)
 
+    # print("centro de gravedad:", CG)
+
+
     total = [w * x**alpha * y**beta * z**-gamma * (1-1/(1+a**delta)) for w, x, y, z, a in zip(V,CS,V_loss,N_b, CG)]
 
     # * - (a**delta)
 
     index = total.index(max(total))
+
+    # print("constante k: ", (container.volume - p_blocks[index].volume)/container.volume) 
+    #cambiar funcion de evaluacion y retornar el p_block con mejor relacion CG - total
 
     return p_blocks[index]
 

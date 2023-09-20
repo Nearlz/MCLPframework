@@ -159,7 +159,7 @@ class Aabb:
         return self.xmin <= aabb.xmin and self.xmax >= aabb.xmax and self.ymin <= aabb.ymin and self.ymax >= aabb.ymax and self.zmin <= aabb.zmin and self.zmax >= aabb.zmax
     
     def __str__(self):
-        return "Aabb: xmin: " + str(self.xmin) + " xmax: " + str(self.xmax) + " ymin: " + str(self.ymin) + " ymax: " + str(self.ymax) + " zmin: " + str(self.zmin) + " zmax: " + str(self.zmax)
+        return "Aabb: xmin: " + str(self.xmin) + " xmax: " + str(self.xmax) + " ymin: " + str(self.ymin) + " ymax: " + str(self.ymax) + " zmin: " + str(self.zmin) + " zmax: " + str(self.zmax) + " weight: " + str(self.weight) + " stacking weight resistance: " + str(self.stacking_weight_resistance)
 
 class Space(Aabb):
     manhattan: int #the manhattan distance to the closest corner of the space to a block's corner
@@ -428,7 +428,7 @@ class Block:
         return self.l <= other.l and self.w <= other.w and self.h <= other.h
       
     def __str__(self):
-        return "Block: l: " + str(self.l) + " w: " + str(self.w) + " h: " + str(self.h) + " weight: " + str(self.weight) + " volume: " + str(self.volume) + " occupied_volume: " + str(self.occupied_volume) + " items: " + str(self.items) + " ratio:" + str(self.occupied_volume_ratio())
+        return "Block: l: " + str(self.l) + " w: " + str(self.w) + " h: " + str(self.h) + " weight: " + str(self.weight)  + " stacking_weight_resistance: " + str(self.stacking_weight_resistance) + " volume: " + str(self.volume) + " occupied_volume: " + str(self.occupied_volume) + " items: " + str(self.items) + " ratio:" + str(self.occupied_volume_ratio())
 
 class BlockList(list):
     def __init__(self, items, type, cont=None, min_fr=0.98, max_bl=10000, *args):
@@ -480,13 +480,26 @@ class BlockList(list):
                 self.append(Block(item,"wlh"))
 
     @staticmethod
+    #porcentaje de area XY de block dentro de last, si block esta totalmente contenido dentro de last se retorna 1 (100%)
     def surface_percent(block, last):
-        x_diff_max = max([block.xmin,last.xmin])
-        x_diff_min = min([block.xmax,last.xmax])
-        y_diff_max = max([block.ymin,last.ymin])
-        y_diff_min = min([block.ymax,last.ymax])
+        # Encuentra las coordenadas de intersección
+        x_diff_max = max(block.xmin, last.xmin)
+        x_diff_min = min(block.xmax, last.xmax)
+        y_diff_max = max(block.ymin, last.ymin)
+        y_diff_min = min(block.ymax, last.ymax)
 
-        return ((y_diff_min-y_diff_max) * (x_diff_min-x_diff_max)) / ( (block.xmax - block.xmin) * (block.ymax - block.ymin) )
+        # Calcula el área de la intersección
+        intersection_area = max(0, x_diff_min - x_diff_max) * max(0, y_diff_min - y_diff_max)
+
+        # Calcula el área total de block
+        block_area = (block.xmax - block.xmin) * (block.ymax - block.ymin)
+
+        # Evita divisiones por cero y calcula el porcentaje
+        if block_area == 0:
+            return 0
+        else:
+            return intersection_area / block_area
+
 
     #entrega si el bloque posible cuple o no con la restriccion de peso
     @staticmethod
@@ -502,33 +515,105 @@ class BlockList(list):
             
             under_block.stacking_weight_resistance -= int(weight* S_percent) #agregar identificador
         return True
+    
+    @staticmethod
+    def blocks_on_top_list(aabb, aabbs):
+        blocks_on_top = []
+        for block in aabbs:
+            # Verificar si 'block' está encima de 'aabb' en el eje Z
+            if block.zmin >= aabb.zmax:
+                # Verificar la intersección en el plano XY
+                if (
+                    (block.xmin <= aabb.xmin <= block.xmax or block.xmin <= aabb.xmax <= block.xmax) and
+                    (block.ymin <= aabb.ymin <= block.ymax or block.ymin <= aabb.ymax <= block.ymax)
+                ):
+                    blocks_on_top.append(block)
+        return blocks_on_top
+
 
     @staticmethod
     def blocks_weight_supported(p_block ,aabbs, space):
+        #en este punto pblock contiene el peso del bloque y la resistencia del peso
         p_blocks_supported = []
         # Cada bloque posible
         for block in p_block:
-            under_blocks = []
             x,y,z = space.corner_point
             if x == space.xmax: x -= block.l
             if y == space.ymax: y -= block.w
             if z == space.zmax: z -= block.h
+            print("######################")
+            print(block)
+            print("block stacking w resistance: ", block.stacking_weight_resistance)
             block_test = Aabb(x,x+block.l,y,y+block.w,z,z+block.h)
-            
+            block_test.weight = block.weight
+            block_test.stacking_weight_resistance = block.stacking_weight_resistance
+            print(block_test)
+            print("######################")
+            print("ta weno")
+            block_is_valid = True
+
+
+            # if( block_test.zmin != 0):
+            #     print("testing block:")
+            #     print(block_test)
+            #     print("blockes debajo de este:")
+
             # Almacenar aabbs que estan debajo del bloque posible
+            under_blocks = []
             for aabb in aabbs:
-                # Si el aabb esta debajo, se agrega (se prueban dimenciones con block_test de tipo Aabb)
-                # Verificar si el AABB está debajo de block_test y dentro de sus dimensiones x y z
-                if ( aabb.zmax <= block_test.zmin ):
-                    if ((block_test.xmin <= aabb.xmin <= block_test.xmax or block_test.xmin <= aabb.xmax <= block_test.xmax ) and
-                        (block_test.ymin <= aabb.ymin <= block_test.ymax or block_test.ymin <= aabb.ymax <= block_test.ymax )): 
+                # print(aabb)
+                # Si el aabb esta debajo del block_test en Z e intersectando en la dimension XY, se agrega
+                if (aabb.zmax <= block_test.zmin):
+                    if ((block_test.xmin <= aabb.xmin <= block_test.xmax or block_test.xmin <= aabb.xmax <= block_test.xmax) and
+                        (block_test.ymin <= aabb.ymin <= block_test.ymax or block_test.ymin <= aabb.ymax <= block_test.ymax)): 
                         under_blocks.append(aabb)
+                        # if( block_test.zmin != 0):
+                        #     print(aabb)
+
+            #en este punto tengo que bloque que quiero probar y una lista de los aabbs que estan debajo de el
+            #evaluar como afecta poner el block_test para todo los bloques que esten debajo de el
+            #aabbs contiene los bloques del container
+
+            stacking_weight_is_valid = True
+
+            print("probandoooooOOOOOOOOoooooooo")
+
+            for underblock in under_blocks:
+                #buscar si bloques que esten arriba * superficie + block_test * superficie no supera la capacidad del underblock
+                blocks_higher = BlockList.blocks_on_top_list(underblock, aabbs)
+
+                total_weight_overlapping = 0
+                for block_h in blocks_higher:
+                    surface_percent_block = BlockList.surface_percent(block_h, underblock)
+                    if len(blocks_higher) > 1:
+                        print("LARGO BLOCKS_HIGHER: ", len(blocks_higher))
+                        if(surface_percent_block < 1):
+                            print("AAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                        print("surface percent return:", surface_percent_block)
+                        print("block_h weight: ", block_h.weight)
+                        print("total weight acum: ", total_weight_overlapping)
+                    total_weight_overlapping = total_weight_overlapping + block_h.weight * surface_percent_block #el surface esta tirando 1!!!!!!
+
+                if len(blocks_higher) > 1:
+                    print("cantidad de blocks higher del bloque: ")
+                    print(len(blocks_higher))
+                    print("peso del underblock")
+                    print(underblock.weight)
+                    print("EJEMPLO DEL PESO DE UN BLOCK HIGHER")
+                    print(blocks_higher[0].weight)
+                    print("total_weight_overlapping")
+                    print(total_weight_overlapping)
+
+                #Si algun bloque de abajo no es capaz de soportar el nuevo bloque, entonces no cumple con restriccion
+                if( total_weight_overlapping + block_test.weight * BlockList.surface_percent(block_test,underblock) >= underblock.stacking_weight_resistance):
+                    block_is_valid = False
 
             #se llama a funcion eval_weight_restriction para ver si el bloque posible se agrega a p_blocks_supported
             # print("block altura: ",block_test.zmin)
             # print(len(under_blocks))
+            
 
-            if ( BlockList.eval_weight_restriction(block_test, under_blocks, block.weight)):
+            if ( block_is_valid ):
                 p_blocks_supported.append(block)
 
         return p_blocks_supported
@@ -543,13 +628,19 @@ class BlockList(list):
     def possible_blocks(blocks,maxL,maxW,maxH, container, space): #cambiar si considerar  
         a = 0
         p_block = []
+        # print("POSIBLE BLOCKS")
         for block in blocks:
             if block.w <= maxW and block.l <= maxL and block.h <= maxH:
                 p_block.append(block)
+                # print(block)
         
         #calcular si los bloques cumplen la restriccion de peso soportado
-        aabbs = container.aabbs
+        # aabbs = container.aabbs
+        # print("AABBS DEL CONTAINER")
+        # print(aabbs)
+
         p_block_w_supported = blocks.blocks_weight_supported(p_block,container.aabbs, space)
+
         return p_block
 
     def largest(blocks, maxL, maxW, maxH):
