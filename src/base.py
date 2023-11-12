@@ -104,22 +104,22 @@ class Aabb:
 
 
 # # Items are pairs (Boxtype, quantity)
-# class Itemdict(dict):
-#   def __iadd__(self, other):
-#       for key in other:
-#           if key in self:
-#               self[key] += other[key]
-#           else:
-#               self[key] = other[key]
-#       return self
+class Itemdict(dict):
+  def __iadd__(self, other):
+      for key in other:
+          if key in self:
+              self[key] += other[key]
+          else:
+              self[key] = other[key]
+      return self
 
-#   def __isub__(self, other):
-#       for key in other:
-#           if key in self:
-#               self[key] -= other[key]
-#           else:
-#               self[key] = -other[key]
-#       return self
+  def __isub__(self, other):
+      for key in other:
+          if key in self:
+              self[key] -= other[key]
+          else:
+              self[key] = -other[key]
+      return self
 
 #An Aabb is cuboid+location
 #Useful for representing free space cuboids and placed blocks
@@ -167,7 +167,7 @@ class Space(Aabb):
 
     #static variable
     filling = "origin" #the filling method used by the algorithm
-    vertical_stability = True # boxes must be completly supported
+    vertical_stability = False#True # boxes must be completly supported
 
     def __init__(self, xmin, xmax, ymin, ymax, zmin, zmax, block):
         super().__init__(xmin, xmax, ymin, ymax, zmin, zmax)
@@ -176,11 +176,11 @@ class Space(Aabb):
         xdist = xmin; ydist = ymin; zdist = zmin
 
         #compute manhattan distance to the closest corner of the block
-        if block.l-xmax < xmin and Space.filling != "origin":
+        if block.l-xmax < xmin and Space.filling != "origin": #aqui habia origin
             xdist = block.l-xmax
             self.corner_point[0] = xmax
 
-        if block.w-ymax < ymin and Space.filling != "origin":
+        if block.w-ymax < ymin and Space.filling != "origin": #aqui habia origin
             ydist = block.w-ymax
             self.corner_point[1] = ymax
 
@@ -264,14 +264,13 @@ class FreeSpace:
         if cspace == None: return None
         else: return cspace
 
-
     #remove all spaces that cannot be filled by a boxtype
     def filter(self, items):
         to_remove = list()
         for space in self.spaces:
             remove = True
             for item in items:
-                if items[item]>0 and space.l >= item.l and space.w >= item.w and space.h >= item.h:
+                if items[item]>0 and space.l >= item.l and space.w >= item.w and space.h >= item.h: 
                     remove = False
                     break
             if remove==True: to_remove.append(space)
@@ -568,7 +567,7 @@ class BlockList(list):
 
         return p_blocks_supported
 
-    def possible_blocks(blocks,maxL,maxW,maxH, container, space): #, weight_restriction=True): 
+    def possible_blocks(blocks,maxL,maxW,maxH, container, space, weight_restriction=False): #, weight_restriction=True): 
         a = 0
         p_block = []
         # print("POSIBLE BLOCKS")
@@ -580,6 +579,19 @@ class BlockList(list):
         print("posible blocks:", len(p_block))
         print("posible blocks que cumplen restriccion de peso:", len(p_block_w_supported))
         print("--------------")
+
+        import csv
+        csv_filename = "HISTORIAL_SALIDA_APILAMIENTO.csv"
+        print("creando archivo HISTORIAL_SALIDA_APILAMIENTO.csv")
+
+        with open(csv_filename, mode='a', newline='') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            # csv_writer.writerow(["bloques posibles", "cumplen"])
+            # Escribir datos
+            csv_writer.writerow([len(p_block), len(p_block_w_supported)])
+
+
+        #if weight_restriction: return p_block_w_supported #aqui se activa la restriccion de apilamiento
 
         # if weight_restriction:
         #     p_block_w_supported = blocks.blocks_weight_supported(p_block,container.aabbs, space)
