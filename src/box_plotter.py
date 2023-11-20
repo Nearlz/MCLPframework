@@ -52,7 +52,15 @@ def plot_container(cont_dim, box_dims):
         boxes.append(Box(box_dim))
 
     data = []
-    for box in boxes:
+
+    #para ir agregando colores en concreto, debe modificarse tracel y recibir un numero concreto de boxes
+    colors=[132,182,244,
+            225,192,182,
+            17,153,136]
+    
+    # for box in boxes:
+    for index, box in enumerate(boxes):
+        opacity_value = 0 if index == len(boxes) - 1 else 1
         tracel = go.Mesh3d(
                   x=box.x, 
                   y=box.y, 
@@ -60,8 +68,9 @@ def plot_container(cont_dim, box_dims):
                   i=box.i,
                   j=box.j, 
                   k=box.k, 
-                  opacity=1,
+                  opacity= opacity_value,
                   color='rgb({},{},{})'.format(
+                    #   colors[0+3*index],colors[1+3*index],colors[2+3*index]
                       random()*255,
                       random()*255,
                       random()*255

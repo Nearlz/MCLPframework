@@ -166,7 +166,7 @@ class Space(Aabb):
     corner_point: list() #the closest corner of the space to a block's corner
 
     #static variable
-    filling = "origin" #the filling method used by the algorithm
+    filling = "bottom-up" #taba origin 000000 the filling method used by the algorithm
     vertical_stability = False#True # boxes must be completly supported
 
     def __init__(self, xmin, xmax, ymin, ymax, zmin, zmax, block):
@@ -174,6 +174,7 @@ class Space(Aabb):
         self.container_block = block
         self.corner_point = [xmin, ymin, zmin]
         xdist = xmin; ydist = ymin; zdist = zmin
+        if Space.filling == "bottom-up": zdist = 1000*zmin
 
         #compute manhattan distance to the closest corner of the block
         if block.l-xmax < xmin and Space.filling != "origin": #aqui habia origin
@@ -576,13 +577,13 @@ class BlockList(list):
                 p_block.append(block)
 
         p_block_w_supported = blocks.blocks_weight_supported(p_block,container.aabbs, space)
-        print("posible blocks:", len(p_block))
-        print("posible blocks que cumplen restriccion de peso:", len(p_block_w_supported))
-        print("--------------")
+        # print("posible blocks:", len(p_block))
+        # print("posible blocks que cumplen restriccion de peso:", len(p_block_w_supported))
+        # print("--------------")
 
         import csv
         csv_filename = "HISTORIAL_SALIDA_APILAMIENTO.csv"
-        print("creando archivo HISTORIAL_SALIDA_APILAMIENTO.csv")
+        # print("creando archivo HISTORIAL_SALIDA_APILAMIENTO.csv")
 
         with open(csv_filename, mode='a', newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
@@ -591,7 +592,7 @@ class BlockList(list):
             csv_writer.writerow([len(p_block), len(p_block_w_supported)])
 
 
-        #if weight_restriction: return p_block_w_supported #aqui se activa la restriccion de apilamiento
+        if weight_restriction: return p_block_w_supported #aqui se activa la restriccion de apilamiento
 
         # if weight_restriction:
         #     p_block_w_supported = blocks.blocks_weight_supported(p_block,container.aabbs, space)
