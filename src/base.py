@@ -66,6 +66,8 @@ class Aabb:
         self.manhattan = self.xmin + self.ymin + self.zmin
         self.covered_surface = 0
         self.covered_surface_face = {'X1':0,'X2':0,'Y1':0,'Y2':0}
+        self.weight = 0
+        self.stacking_weight_resistance = 0
     
     # returns true if aabb is inside self
     def strict_intersects(self, aabb):
@@ -142,6 +144,8 @@ class Aabb:
         self.l = xmax-xmin; self.w = ymax-ymin; self.h = zmax-zmin
         self.covered_surface = 0
         self.covered_surface_face = {'X1':0,'X2':0,'Y1':0,'Y2':0}
+        self.weight = 0
+        self.stacking_weight_resistance = 0
     
     # returns true if aabb is inside self
     def strict_intersects(self, aabb):
@@ -576,13 +580,13 @@ class BlockList(list):
                 p_block.append(block)
 
         p_block_w_supported = blocks.blocks_weight_supported(p_block,container.aabbs, space)
-        print("posible blocks:", len(p_block))
-        print("posible blocks que cumplen restriccion de peso:", len(p_block_w_supported))
-        print("--------------")
+        # print("posible blocks:", len(p_block))
+        # print("posible blocks que cumplen restriccion de peso:", len(p_block_w_supported))
+        # print("--------------")
 
         import csv
         csv_filename = "HISTORIAL_SALIDA_APILAMIENTO.csv"
-        print("creando archivo HISTORIAL_SALIDA_APILAMIENTO.csv")
+        # print("creando archivo HISTORIAL_SALIDA_APILAMIENTO.csv")
 
         with open(csv_filename, mode='a', newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
