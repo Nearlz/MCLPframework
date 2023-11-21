@@ -54,8 +54,9 @@ def CS_function(blocks,space,p,container):
 def dynamic_stability(blocks,space,p,container):
     stored_blocks = container.aabbs
     block_value = np.zeros(len(blocks))
-    stored_blocks_surfaces = np.zeros((len(stored_blocks),4))
-    stored_blocks_values = np.zeros(len(stored_blocks))
+    stored_blocks_surfaces = np.zeros((len(stored_blocks)+1,4))
+    stored_blocks_values = np.zeros(len(stored_blocks)+1)
+    #Este FOR evalua todos con todos dentro del contenedor, antes de considerar los bloques posibles
     for j in range(len(stored_blocks)):
         first_block = stored_blocks[j]
         for k in range(j+1,len(stored_blocks)):
@@ -91,30 +92,7 @@ def dynamic_stability(blocks,space,p,container):
             stored_blocks_surfaces[j,2]+= ((first_block.xmax-first_block.xmin) * (first_block.zmax-first_block.zmin))
         if abs(first_block.ymax - container.w) <= (first_block.ymax - first_block.ymin) * p:
             stored_blocks_surfaces[j,3]+= ((first_block.xmax-first_block.xmin) * (first_block.zmax-first_block.zmin))
-    for i,possible_block in enumerate(blocks,0):
-        stored_blocks = container.aabbs
-        
-        x,y,z = space.corner_point
-        if x == space.xmax: x -= possible_block.l
-        if y == space.ymax: y -= possible_block.w
-        if z == space.zmax: z -= possible_block.h
-        block = Aabb(x,x+possible_block.l,y,y+possible_block.w,z,z+possible_block.h)
-        # stored_blocks.append(block)
-        if len(stored_blocks) > 0:
 
-            for j in range(len(stored_blocks)):
-                first_block = stored_blocks[j]
-                if stored_blocks_surfaces[j,0]/((first_block.ymax-first_block.ymin) * (first_block.zmax-first_block.zmin)) > 0.95:
-                    stored_blocks_values[j]+= 1
-                if stored_blocks_surfaces[j,1]/((first_block.ymax-first_block.ymin) * (first_block.zmax-first_block.zmin)) > 0.95:
-                    stored_blocks_values[j]+= 1
-                if stored_blocks_surfaces[j,2]/((first_block.xmax-first_block.xmin) * (first_block.zmax-first_block.zmin)) > 0.95:
-                    stored_blocks_values[j]+= 1
-                if stored_blocks_surfaces[j,3]/((first_block.xmax-first_block.xmin) * (first_block.zmax-first_block.zmin)) > 0.95:
-                    stored_blocks_values[j]+= 1
-                if stored_blocks_values[j] >= 3:
-                    block_value[i] += first_block.volume
-    return block_value
 
 def maximize_axis(limit,items):
     items.sort(reverse=True)
