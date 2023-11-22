@@ -52,6 +52,8 @@ def CS_function(blocks,space,p,container):
 
 
 def dynamic_stability(blocks,space,p,container):
+    # p = 0.5
+    tolerance = 0.5
     stored_blocks = container.aabbs
     block_value = np.zeros(len(blocks))
     stored_blocks_surfaces = np.zeros((len(stored_blocks)+1,4))
@@ -92,6 +94,72 @@ def dynamic_stability(blocks,space,p,container):
             stored_blocks_surfaces[j,2]+= ((first_block.xmax-first_block.xmin) * (first_block.zmax-first_block.zmin))
         if abs(first_block.ymax - container.w) <= (first_block.ymax - first_block.ymin) * p:
             stored_blocks_surfaces[j,3]+= ((first_block.xmax-first_block.xmin) * (first_block.zmax-first_block.zmin))
+
+    for j,possible_block in enumerate(blocks):
+        block_surfaces = stored_blocks_surfaces.copy()
+        # stored_blocks_values = np.zeros(len(stored_blocks)+1)
+        x,y,z = space.corner_point
+        if x == space.xmax: x -= possible_block.l
+        if y == space.ymax: y -= possible_block.w
+        if z == space.zmax: z -= possible_block.h
+        block = Aabb(x,x+possible_block.l,y,y+possible_block.w,z,z+possible_block.h)
+        for i,stored_block in enumerate(stored_blocks):
+            x_diff_max = max([stored_block.xmin,block.xmin])
+            x_diff_min = min([stored_block.xmax,block.xmax])
+            y_diff_max = max([stored_block.ymin,block.ymin])
+            y_diff_min = min([stored_block.ymax,block.ymax])
+            z_diff_max = max([stored_block.zmin,block.zmin])
+            z_diff_min = min([stored_block.zmax,block.zmax])
+            if abs(stored_block.xmax - block.xmin) <= abs(stored_block.xmax - block.xmin) * p and ((stored_block.zmin < block.zmax and stored_block.zmax > block.zmin ) and (stored_block.ymin < block.ymax and stored_block.ymax > block.ymin )):
+                block_surfaces[i,0]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+                block_surfaces[-1,1]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+
+            elif abs(stored_block.xmin - block.xmax) <= abs(stored_block.xmax - block.xmin) * p and ((stored_block.zmin < block.zmax and stored_block.zmax > block.zmin ) and (stored_block.ymin < block.ymax and stored_block.ymax > block.ymin )):
+                block_surfaces[i,1]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+                block_surfaces[-1,0]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+
+            elif abs(stored_block.ymax - block.ymin) <= abs(stored_block.ymax - block.ymin) * p and ((stored_block.zmin < block.zmax and stored_block.zmax > block.zmin ) and (stored_block.xmin < block.xmax and stored_block.xmax > block.xmin )):
+                block_surfaces[i,2]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+                block_surfaces[-1,3]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+
+            elif abs(stored_block.ymin - block.ymax) <= abs(stored_block.ymax - block.ymin) * p and ((stored_block.zmin < block.zmax and stored_block.zmax > block.zmin ) and (stored_block.xmin < block.xmax and stored_block.xmax > block.xmin )):
+                block_surfaces[i,3]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+                block_surfaces[-1,2]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+
+        if block.xmin <= (block.xmax - block.xmin) * p:
+            block_surfaces[-1,0]+= ((block.ymax-block.ymin) * (block.zmax-block.zmin))
+        if abs(block.xmax - container.l) <= (block.xmax - block.xmin) * p:
+            block_surfaces[-1,1]+= ((block.ymax-block.ymin) * (block.zmax-block.zmin))
+        if block.ymin <= (block.ymax - block.ymin) * p:
+            block_surfaces[-1,2]+= ((block.xmax-block.xmin) * (block.zmax-block.zmin))
+        if abs(block.ymax - container.w) <= (block.ymax - block.ymin) * p:
+            block_surfaces[-1,3]+= ((block.xmax-block.xmin) * (block.zmax-block.zmin))
+
+        for i in range(len(block_surfaces)-1):
+            if block_surfaces[i,0] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].ymax - stored_blocks[i].ymin)) > tolerance:
+                stored_blocks_values[i]+=1
+            if block_surfaces[i,1] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].ymax - stored_blocks[i].ymin)) > tolerance:
+                stored_blocks_values[i]+=1
+            if block_surfaces[i,2] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].xmax - stored_blocks[i].xmin)) > tolerance:
+                stored_blocks_values[i]+=1
+            if block_surfaces[i,3] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].xmax - stored_blocks[i].xmin)) > tolerance:
+                stored_blocks_values[i]+=1
+            if stored_blocks_values[i] >= 3:
+                block_value[j] += (stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].ymax - stored_blocks[i].ymin) * (stored_blocks[i].xmax - stored_blocks[i].xmin)
+
+        if block_surfaces[-1,0] / ((block.zmax - block.zmin) * (block.ymax - block.ymin)) > tolerance:
+            stored_blocks_values[-1]+=1
+        if block_surfaces[-1,1] / ((block.zmax - block.zmin) * (block.ymax - block.ymin)) > tolerance:
+            stored_blocks_values[-1]+=1
+        if block_surfaces[-1,2] / ((block.zmax - block.zmin) * (block.xmax - block.xmin)) > tolerance:
+            stored_blocks_values[-1]+=1
+        if block_surfaces[-1,3] / ((block.zmax - block.zmin) * (block.xmax - block.xmin)) > tolerance:
+            stored_blocks_values[-1]+=1
+        if stored_blocks_values[-1] >= 3:
+            block_value[j] += (block.zmax - block.zmin) * (block.ymax - block.ymin) * (block.xmax - block.xmin)
+
+    return block_value
+        
 
 
 def maximize_axis(limit,items):
