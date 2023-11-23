@@ -102,7 +102,7 @@ class Aabb:
         return self.xmin <= aabb.xmin and self.xmax >= aabb.xmax and self.ymin <= aabb.ymin and self.ymax >= aabb.ymax and self.zmin <= aabb.zmin and self.zmax >= aabb.zmax
     
     def __str__(self):
-        return "Aabb: xmin: " + str(self.xmin) + " xmax: " + str(self.xmax) + " ymin: " + str(self.ymin) + " ymax: " + str(self.ymax) + " zmin: " + str(self.zmin) + " zmax: " + str(self.zmax)
+        return "Aabb: xmin: " + str(self.xmin) + " xmax: " + str(self.xmax) + " ymin: " + str(self.ymin) + " ymax: " + str(self.ymax) + " zmin: " + str(self.zmin) + " zmax: " + str(self.zmax) + " weight: " + str(self.weight) + " stacking weight resistance: " + str(self.stacking_weight_resistance)
 
 
 # # Items are pairs (Boxtype, quantity)
@@ -123,47 +123,6 @@ class Itemdict(dict):
               self[key] = -other[key]
       return self
 
-#An Aabb is cuboid+location
-#Useful for representing free space cuboids and placed blocks
-class Aabb:
-    xmin: int; xmax: int
-    ymin: int; ymax: int
-    zmin: int; zmax: int
-    l: int; w: int; h: int
-    volume: int
-    weight: int
-    stacking_weight_resistance: int
-    covered_surface: int
-    covered_surface_face: dict()
-
-    def __init__(self, xmin, xmax, ymin, ymax, zmin, zmax):
-        self.xmin = xmin; self.xmax = xmax
-        self.ymin = ymin; self.ymax = ymax
-        self.zmin = zmin; self.zmax = zmax
-        self.volume = (xmax-xmin)*(ymax-ymin)*(zmax-zmin)
-        self.l = xmax-xmin; self.w = ymax-ymin; self.h = zmax-zmin
-        self.covered_surface = 0
-        self.covered_surface_face = {'X1':0,'X2':0,'Y1':0,'Y2':0}
-        self.weight = 0
-        self.stacking_weight_resistance = 0
-    
-    # returns true if aabb is inside self
-    def strict_intersects(self, aabb):
-        return self.xmin < aabb.xmax and self.xmax > aabb.xmin and self.ymin < aabb.ymax and self.ymax > aabb.ymin and self.zmin < aabb.zmax and self.zmax > aabb.zmin
-    
-    # returns true if aabb intersects self
-    def intersects(self, aabb):
-        return self.xmin <= aabb.xmax and self.xmax >= aabb.xmin and self.ymin <= aabb.ymax and self.ymax >= aabb.ymin and self.zmin <= aabb.zmax and self.zmax >= aabb.zmin
-       
-    def can_contain(self, aabb):
-        return self.l >= aabb.l and self.w >= aabb.w and self.h >= aabb.h
-    
-    # aabb is contained in self
-    def __ge__(self, aabb):
-        return self.xmin <= aabb.xmin and self.xmax >= aabb.xmax and self.ymin <= aabb.ymin and self.ymax >= aabb.ymax and self.zmin <= aabb.zmin and self.zmax >= aabb.zmax
-    
-    def __str__(self):
-        return "Aabb: xmin: " + str(self.xmin) + " xmax: " + str(self.xmax) + " ymin: " + str(self.ymin) + " ymax: " + str(self.ymax) + " zmin: " + str(self.zmin) + " zmax: " + str(self.zmax) + " weight: " + str(self.weight) + " stacking weight resistance: " + str(self.stacking_weight_resistance)
 
 class Space(Aabb):
     manhattan: int #the manhattan distance to the closest corner of the space to a block's corner
@@ -322,9 +281,9 @@ class Block:
             self.volume = copy_block.volume
             self.items = Itemdict()
             self.items += copy_block.items
-            self.tokens = copy_block.tokens
-            #self.free_spaces
-            #self.aabbs 
+            # self.tokens = copy_block.tokens
+            # self.free_spaces
+            # self.aabbs
 
         elif boxtype is not None:
           if rot[0]=='w': self.l = boxtype.w
