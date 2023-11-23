@@ -286,7 +286,7 @@ def eval_function(blocks,space,container, params,items, weight_restriction=False
 
     if len(p_blocks) == 0: return None #si no existen bloques posibles devuelve None para seguir con otro espacio
 
-    alpha = params[0]; beta = params[1]; gamma = params[2]; delta = params[3]; p = params[4]
+    alpha = params[0]; beta = params[1]; gamma = params[2]; delta = params[3]; p = params[4]; epsilon = params[5]
 
     V = [(x.l * x.w * x.l) for x in p_blocks]
 
@@ -317,6 +317,7 @@ def eval_function(blocks,space,container, params,items, weight_restriction=False
     total_old = [w * x**alpha * y**beta * z**-gamma * (1-1/(1+a**delta)) for w, x, y, z, a in zip(V,CS,V_loss,N_b, CG)]
 
     total = [w * x**alpha * (1-y)**beta * z**-gamma *  (b**delta) * (a ** K) * (c**pha) for w, x, y, z, a, b, c in zip(V,CS,V_loss,N_b,DS, CG,resistance)]
+    # total = [w * x**alpha * (1-y)**beta * z**-gamma * ((a ** K)**epsilon) * (b**qui) * (c**pha) for w, x, y, z, a, b, c in zip(V,CS,V_loss,N_b, CG,DS,resistance)]
 
     # print("total old: ", total_old)
     # print("total    : ", total)
