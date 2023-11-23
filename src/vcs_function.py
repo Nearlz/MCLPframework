@@ -265,7 +265,7 @@ def eval_function(blocks,space,container, params,items, weight_restriction=False
 
     total_old = [w * x**alpha * y**beta * z**-gamma * (1-1/(1+a**delta)) for w, x, y, z, a in zip(V,CS,V_loss,N_b, CG)]
 
-    total = [w * x**alpha * y**beta * z**-gamma * (a ** K) * (b**qui) * (c**pha) for w, x, y, z, a, b, c in zip(V,CS,V_loss,N_b, CG,DS,resistance)]
+    total = [w * x**alpha * (1-y)**beta * z**-gamma * (a ** K) * (b**qui) * (c**pha) for w, x, y, z, a, b, c in zip(V,CS,V_loss,N_b, CG,DS,resistance)]
 
     # print("total old: ", total_old)
     # print("total    : ", total)
