@@ -54,7 +54,7 @@ def CS_function(blocks,space,p,container):
 
 
 def dynamic_stability(blocks,space,gap,container,final=False):
-    tolerance = 0.5
+    tolerance = 0.2
     stored_blocks = container.aabbs
     if final:
         block_value = 0
@@ -105,7 +105,7 @@ def dynamic_stability(blocks,space,gap,container,final=False):
                 stored_blocks_values[i]+=1
             if (stored_blocks_surfaces[i,3] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].xmax - stored_blocks[i].xmin))) > tolerance:
                 stored_blocks_values[i]+=1
-            if stored_blocks_values[i] >= 3:
+            if stored_blocks_values[i] >= 2:
                 block_value += (stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].ymax - stored_blocks[i].ymin) * (stored_blocks[i].xmax - stored_blocks[i].xmin)
 
 
