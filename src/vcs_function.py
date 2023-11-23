@@ -53,115 +53,168 @@ def CS_function(blocks,space,p,container):
     return block_value
 
 
-def dynamic_stability(blocks,space,gap,container):
-    # p = 0.5
+def dynamic_stability(blocks,space,gap,container,final=False):
     tolerance = 0.5
     stored_blocks = container.aabbs
-    block_value = np.zeros(len(blocks))
-    stored_blocks_surfaces = np.zeros((len(stored_blocks)+1,4))
-    stored_blocks_values = np.zeros(len(stored_blocks)+1)
-    #Este FOR evalua todos con todos dentro del contenedor, antes de considerar los bloques posibles
-    # for j in range(len(stored_blocks)):
-    # first_block = stored_blocks[j].copy()
-    # for k in range(j+1,len(stored_blocks)):
-    for j,first_block in enumerate(stored_blocks):
-        for k in range(j+1,len(stored_blocks)):
-            second_block = stored_blocks[k]
-            x_diff_max = max([second_block.xmin,first_block.xmin])
-            x_diff_min = min([second_block.xmax,first_block.xmax])
-            y_diff_max = max([second_block.ymin,first_block.ymin])
-            y_diff_min = min([second_block.ymax,first_block.ymax])
-            z_diff_max = max([second_block.zmin,first_block.zmin])
-            z_diff_min = min([second_block.zmax,first_block.zmax])
-            
-            if (abs(second_block.xmax - first_block.xmin) <= (second_block.xmax - first_block.xmin) * gap) and ((second_block.zmin < first_block.zmax and second_block.zmax > first_block.zmin ) and (second_block.ymin < first_block.ymax and second_block.ymax > first_block.ymin )):
-                stored_blocks_surfaces[k,0]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
-                stored_blocks_surfaces[j,1]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+    if final:
+        block_value = 0
+        stored_blocks_surfaces = np.zeros((len(stored_blocks),4))
+        stored_blocks_values = np.zeros(len(stored_blocks))
+        for j,first_block in enumerate(stored_blocks):
+            for k in range(j+1,len(stored_blocks)):
+                second_block = stored_blocks[k]
+                x_diff_max = max([second_block.xmin,first_block.xmin])
+                x_diff_min = min([second_block.xmax,first_block.xmax])
+                y_diff_max = max([second_block.ymin,first_block.ymin])
+                y_diff_min = min([second_block.ymax,first_block.ymax])
+                z_diff_max = max([second_block.zmin,first_block.zmin])
+                z_diff_min = min([second_block.zmax,first_block.zmax])
+                
+                if (abs(second_block.xmax - first_block.xmin) <= (second_block.xmax - first_block.xmin) * gap) and ((second_block.zmin < first_block.zmax and second_block.zmax > first_block.zmin ) and (second_block.ymin < first_block.ymax and second_block.ymax > first_block.ymin )):
+                    stored_blocks_surfaces[k,0]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+                    stored_blocks_surfaces[j,1]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
 
-            elif (abs(second_block.xmin - first_block.xmax) <= (second_block.xmax - first_block.xmin) * gap) and ((second_block.zmin < first_block.zmax and second_block.zmax > first_block.zmin ) and (second_block.ymin < first_block.ymax and second_block.ymax > first_block.ymin )):
-                stored_blocks_surfaces[k,1]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
-                stored_blocks_surfaces[j,0]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+                elif (abs(second_block.xmin - first_block.xmax) <= (second_block.xmax - first_block.xmin) * gap) and ((second_block.zmin < first_block.zmax and second_block.zmax > first_block.zmin ) and (second_block.ymin < first_block.ymax and second_block.ymax > first_block.ymin )):
+                    stored_blocks_surfaces[k,1]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+                    stored_blocks_surfaces[j,0]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
 
-            elif (abs(second_block.ymax - first_block.ymin) <= (second_block.ymax - first_block.ymin) * gap) and ((second_block.zmin < first_block.zmax and second_block.zmax > first_block.zmin ) and (second_block.xmin < first_block.xmax and second_block.xmax > first_block.xmin )):
-                stored_blocks_surfaces[k,2]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
-                stored_blocks_surfaces[j,3]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+                elif (abs(second_block.ymax - first_block.ymin) <= (second_block.ymax - first_block.ymin) * gap) and ((second_block.zmin < first_block.zmax and second_block.zmax > first_block.zmin ) and (second_block.xmin < first_block.xmax and second_block.xmax > first_block.xmin )):
+                    stored_blocks_surfaces[k,2]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+                    stored_blocks_surfaces[j,3]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
 
-            elif (abs(second_block.ymin - first_block.ymax) <= (second_block.ymax - first_block.ymin) * gap) and ((second_block.zmin < first_block.zmax and second_block.zmax > first_block.zmin ) and (second_block.xmin < first_block.xmax and second_block.xmax > first_block.xmin )):
-                stored_blocks_surfaces[k,3]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
-                stored_blocks_surfaces[j,2]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+                elif (abs(second_block.ymin - first_block.ymax) <= (second_block.ymax - first_block.ymin) * gap) and ((second_block.zmin < first_block.zmax and second_block.zmax > first_block.zmin ) and (second_block.xmin < first_block.xmax and second_block.xmax > first_block.xmin )):
+                    stored_blocks_surfaces[k,3]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+                    stored_blocks_surfaces[j,2]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
 
-        if first_block.xmin <= (first_block.xmax - first_block.xmin) * gap:
-            stored_blocks_surfaces[j,0]+= ((first_block.ymax-first_block.ymin) * (first_block.zmax-first_block.zmin))
-        if abs(first_block.xmax - container.l) <= (first_block.xmax - first_block.xmin) * gap:
-            stored_blocks_surfaces[j,1]+= ((first_block.ymax-first_block.ymin) * (first_block.zmax-first_block.zmin))
-        if first_block.ymin <= (first_block.ymax - first_block.ymin) * gap:
-            stored_blocks_surfaces[j,2]+= ((first_block.xmax-first_block.xmin) * (first_block.zmax-first_block.zmin))
-        if abs(first_block.ymax - container.w) <= (first_block.ymax - first_block.ymin) * gap:
-            stored_blocks_surfaces[j,3]+= ((first_block.xmax-first_block.xmin) * (first_block.zmax-first_block.zmin))
+            if first_block.xmin <= (first_block.xmax - first_block.xmin) * gap:
+                stored_blocks_surfaces[j,0]+= ((first_block.ymax-first_block.ymin) * (first_block.zmax-first_block.zmin))
+            if abs(first_block.xmax - container.l) <= (first_block.xmax - first_block.xmin) * gap:
+                stored_blocks_surfaces[j,1]+= ((first_block.ymax-first_block.ymin) * (first_block.zmax-first_block.zmin))
+            if first_block.ymin <= (first_block.ymax - first_block.ymin) * gap:
+                stored_blocks_surfaces[j,2]+= ((first_block.xmax-first_block.xmin) * (first_block.zmax-first_block.zmin))
+            if abs(first_block.ymax - container.w) <= (first_block.ymax - first_block.ymin) * gap:
+                stored_blocks_surfaces[j,3]+= ((first_block.xmax-first_block.xmin) * (first_block.zmax-first_block.zmin))
 
-    for j,possible_block in enumerate(blocks):
-        block_surfaces = stored_blocks_surfaces.copy()
-        stored_blocks_values = np.zeros(len(stored_blocks)+1)
-        x,y,z = space.corner_point
-        if x == space.xmax: x -= possible_block.l
-        if y == space.ymax: y -= possible_block.w
-        if z == space.zmax: z -= possible_block.h
-        block = Aabb(x,x+possible_block.l,y,y+possible_block.w,z,z+possible_block.h)
-        for i,stored_block in enumerate(stored_blocks):
-            x_diff_max = max([stored_block.xmin,block.xmin])
-            x_diff_min = min([stored_block.xmax,block.xmax])
-            y_diff_max = max([stored_block.ymin,block.ymin])
-            y_diff_min = min([stored_block.ymax,block.ymax])
-            z_diff_max = max([stored_block.zmin,block.zmin])
-            z_diff_min = min([stored_block.zmax,block.zmax])
-            if abs(stored_block.xmax - block.xmin) <= abs(stored_block.xmax - block.xmin) * gap and ((stored_block.zmin < block.zmax and stored_block.zmax > block.zmin ) and (stored_block.ymin < block.ymax and stored_block.ymax > block.ymin )):
-                block_surfaces[i,0]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
-                block_surfaces[-1,1]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
 
-            elif abs(stored_block.xmin - block.xmax) <= abs(stored_block.xmax - block.xmin) * gap and ((stored_block.zmin < block.zmax and stored_block.zmax > block.zmin ) and (stored_block.ymin < block.ymax and stored_block.ymax > block.ymin )):
-                block_surfaces[i,1]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
-                block_surfaces[-1,0]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
-
-            elif abs(stored_block.ymax - block.ymin) <= abs(stored_block.ymax - block.ymin) * gap and ((stored_block.zmin < block.zmax and stored_block.zmax > block.zmin ) and (stored_block.xmin < block.xmax and stored_block.xmax > block.xmin )):
-                block_surfaces[i,2]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
-                block_surfaces[-1,3]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
-
-            elif abs(stored_block.ymin - block.ymax) <= abs(stored_block.ymax - block.ymin) * gap and ((stored_block.zmin < block.zmax and stored_block.zmax > block.zmin ) and (stored_block.xmin < block.xmax and stored_block.xmax > block.xmin )):
-                block_surfaces[i,3]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
-                block_surfaces[-1,2]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
-
-        if block.xmin <= (block.xmax - block.xmin) * gap:
-            block_surfaces[-1,0]+= ((block.ymax-block.ymin) * (block.zmax-block.zmin))
-        if abs(block.xmax - container.l) <= (block.xmax - block.xmin) * gap:
-            block_surfaces[-1,1]+= ((block.ymax-block.ymin) * (block.zmax-block.zmin))
-        if block.ymin <= (block.ymax - block.ymin) * gap:
-            block_surfaces[-1,2]+= ((block.xmax-block.xmin) * (block.zmax-block.zmin))
-        if abs(block.ymax - container.w) <= (block.ymax - block.ymin) * gap:
-            block_surfaces[-1,3]+= ((block.xmax-block.xmin) * (block.zmax-block.zmin))
-
-        for i in range(len(block_surfaces)-1):
-            if (block_surfaces[i,0] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].ymax - stored_blocks[i].ymin))) > tolerance:
+        for i in range(len(stored_blocks_surfaces)):
+            if (stored_blocks_surfaces[i,0] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].ymax - stored_blocks[i].ymin))) > tolerance:
                 stored_blocks_values[i]+=1
-            if (block_surfaces[i,1] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].ymax - stored_blocks[i].ymin))) > tolerance:
+            if (stored_blocks_surfaces[i,1] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].ymax - stored_blocks[i].ymin))) > tolerance:
                 stored_blocks_values[i]+=1
-            if (block_surfaces[i,2] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].xmax - stored_blocks[i].xmin))) > tolerance:
+            if (stored_blocks_surfaces[i,2] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].xmax - stored_blocks[i].xmin))) > tolerance:
                 stored_blocks_values[i]+=1
-            if (block_surfaces[i,3] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].xmax - stored_blocks[i].xmin))) > tolerance:
+            if (stored_blocks_surfaces[i,3] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].xmax - stored_blocks[i].xmin))) > tolerance:
                 stored_blocks_values[i]+=1
             if stored_blocks_values[i] >= 3:
-                block_value[j] += (stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].ymax - stored_blocks[i].ymin) * (stored_blocks[i].xmax - stored_blocks[i].xmin)
+                block_value += (stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].ymax - stored_blocks[i].ymin) * (stored_blocks[i].xmax - stored_blocks[i].xmin)
 
-        if (block_surfaces[-1,0] / ((block.zmax - block.zmin) * (block.ymax - block.ymin))) > tolerance:
-            stored_blocks_values[-1]+=1
-        if (block_surfaces[-1,1] / ((block.zmax - block.zmin) * (block.ymax - block.ymin))) > tolerance:
-            stored_blocks_values[-1]+=1
-        if (block_surfaces[-1,2] / ((block.zmax - block.zmin) * (block.xmax - block.xmin))) > tolerance:
-            stored_blocks_values[-1]+=1
-        if (block_surfaces[-1,3] / ((block.zmax - block.zmin) * (block.xmax - block.xmin))) > tolerance:
-            stored_blocks_values[-1]+=1
-        if stored_blocks_values[-1] >= 3:
-            block_value[j] += (block.zmax - block.zmin) * (block.ymax - block.ymin) * (block.xmax - block.xmin)
-        block_value[j] /= container.l * container.h * container.w
+
+    else:
+        block_value = np.zeros(len(blocks))
+        stored_blocks_surfaces = np.zeros((len(stored_blocks)+1,4))
+        stored_blocks_values = np.zeros(len(stored_blocks)+1)
+        #Este FOR evalua todos con todos dentro del contenedor, antes de considerar los bloques posibles
+        # for j in range(len(stored_blocks)):
+        # first_block = stored_blocks[j].copy()
+        # for k in range(j+1,len(stored_blocks)):
+        for j,first_block in enumerate(stored_blocks):
+            for k in range(j+1,len(stored_blocks)):
+                second_block = stored_blocks[k]
+                x_diff_max = max([second_block.xmin,first_block.xmin])
+                x_diff_min = min([second_block.xmax,first_block.xmax])
+                y_diff_max = max([second_block.ymin,first_block.ymin])
+                y_diff_min = min([second_block.ymax,first_block.ymax])
+                z_diff_max = max([second_block.zmin,first_block.zmin])
+                z_diff_min = min([second_block.zmax,first_block.zmax])
+                
+                if (abs(second_block.xmax - first_block.xmin) <= (second_block.xmax - first_block.xmin) * gap) and ((second_block.zmin < first_block.zmax and second_block.zmax > first_block.zmin ) and (second_block.ymin < first_block.ymax and second_block.ymax > first_block.ymin )):
+                    stored_blocks_surfaces[k,0]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+                    stored_blocks_surfaces[j,1]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+
+                elif (abs(second_block.xmin - first_block.xmax) <= (second_block.xmax - first_block.xmin) * gap) and ((second_block.zmin < first_block.zmax and second_block.zmax > first_block.zmin ) and (second_block.ymin < first_block.ymax and second_block.ymax > first_block.ymin )):
+                    stored_blocks_surfaces[k,1]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+                    stored_blocks_surfaces[j,0]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+
+                elif (abs(second_block.ymax - first_block.ymin) <= (second_block.ymax - first_block.ymin) * gap) and ((second_block.zmin < first_block.zmax and second_block.zmax > first_block.zmin ) and (second_block.xmin < first_block.xmax and second_block.xmax > first_block.xmin )):
+                    stored_blocks_surfaces[k,2]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+                    stored_blocks_surfaces[j,3]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+
+                elif (abs(second_block.ymin - first_block.ymax) <= (second_block.ymax - first_block.ymin) * gap) and ((second_block.zmin < first_block.zmax and second_block.zmax > first_block.zmin ) and (second_block.xmin < first_block.xmax and second_block.xmax > first_block.xmin )):
+                    stored_blocks_surfaces[k,3]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+                    stored_blocks_surfaces[j,2]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+
+            if first_block.xmin <= (first_block.xmax - first_block.xmin) * gap:
+                stored_blocks_surfaces[j,0]+= ((first_block.ymax-first_block.ymin) * (first_block.zmax-first_block.zmin))
+            if abs(first_block.xmax - container.l) <= (first_block.xmax - first_block.xmin) * gap:
+                stored_blocks_surfaces[j,1]+= ((first_block.ymax-first_block.ymin) * (first_block.zmax-first_block.zmin))
+            if first_block.ymin <= (first_block.ymax - first_block.ymin) * gap:
+                stored_blocks_surfaces[j,2]+= ((first_block.xmax-first_block.xmin) * (first_block.zmax-first_block.zmin))
+            if abs(first_block.ymax - container.w) <= (first_block.ymax - first_block.ymin) * gap:
+                stored_blocks_surfaces[j,3]+= ((first_block.xmax-first_block.xmin) * (first_block.zmax-first_block.zmin))
+
+        for j,possible_block in enumerate(blocks):
+            block_surfaces = stored_blocks_surfaces.copy()
+            stored_blocks_values = np.zeros(len(stored_blocks)+1)
+            x,y,z = space.corner_point
+            if x == space.xmax: x -= possible_block.l
+            if y == space.ymax: y -= possible_block.w
+            if z == space.zmax: z -= possible_block.h
+            block = Aabb(x,x+possible_block.l,y,y+possible_block.w,z,z+possible_block.h)
+            for i,stored_block in enumerate(stored_blocks):
+                x_diff_max = max([stored_block.xmin,block.xmin])
+                x_diff_min = min([stored_block.xmax,block.xmax])
+                y_diff_max = max([stored_block.ymin,block.ymin])
+                y_diff_min = min([stored_block.ymax,block.ymax])
+                z_diff_max = max([stored_block.zmin,block.zmin])
+                z_diff_min = min([stored_block.zmax,block.zmax])
+                if abs(stored_block.xmax - block.xmin) <= abs(stored_block.xmax - block.xmin) * gap and ((stored_block.zmin < block.zmax and stored_block.zmax > block.zmin ) and (stored_block.ymin < block.ymax and stored_block.ymax > block.ymin )):
+                    block_surfaces[i,0]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+                    block_surfaces[-1,1]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+
+                elif abs(stored_block.xmin - block.xmax) <= abs(stored_block.xmax - block.xmin) * gap and ((stored_block.zmin < block.zmax and stored_block.zmax > block.zmin ) and (stored_block.ymin < block.ymax and stored_block.ymax > block.ymin )):
+                    block_surfaces[i,1]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+                    block_surfaces[-1,0]+= ((z_diff_min-z_diff_max) * (y_diff_min-y_diff_max))
+
+                elif abs(stored_block.ymax - block.ymin) <= abs(stored_block.ymax - block.ymin) * gap and ((stored_block.zmin < block.zmax and stored_block.zmax > block.zmin ) and (stored_block.xmin < block.xmax and stored_block.xmax > block.xmin )):
+                    block_surfaces[i,2]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+                    block_surfaces[-1,3]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+
+                elif abs(stored_block.ymin - block.ymax) <= abs(stored_block.ymax - block.ymin) * gap and ((stored_block.zmin < block.zmax and stored_block.zmax > block.zmin ) and (stored_block.xmin < block.xmax and stored_block.xmax > block.xmin )):
+                    block_surfaces[i,3]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+                    block_surfaces[-1,2]+= ((z_diff_min-z_diff_max) * (x_diff_min-x_diff_max))
+
+            if block.xmin <= (block.xmax - block.xmin) * gap:
+                block_surfaces[-1,0]+= ((block.ymax-block.ymin) * (block.zmax-block.zmin))
+            if abs(block.xmax - container.l) <= (block.xmax - block.xmin) * gap:
+                block_surfaces[-1,1]+= ((block.ymax-block.ymin) * (block.zmax-block.zmin))
+            if block.ymin <= (block.ymax - block.ymin) * gap:
+                block_surfaces[-1,2]+= ((block.xmax-block.xmin) * (block.zmax-block.zmin))
+            if abs(block.ymax - container.w) <= (block.ymax - block.ymin) * gap:
+                block_surfaces[-1,3]+= ((block.xmax-block.xmin) * (block.zmax-block.zmin))
+
+            for i in range(len(block_surfaces)-1):
+                if (block_surfaces[i,0] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].ymax - stored_blocks[i].ymin))) > tolerance:
+                    stored_blocks_values[i]+=1
+                if (block_surfaces[i,1] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].ymax - stored_blocks[i].ymin))) > tolerance:
+                    stored_blocks_values[i]+=1
+                if (block_surfaces[i,2] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].xmax - stored_blocks[i].xmin))) > tolerance:
+                    stored_blocks_values[i]+=1
+                if (block_surfaces[i,3] / ((stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].xmax - stored_blocks[i].xmin))) > tolerance:
+                    stored_blocks_values[i]+=1
+                if stored_blocks_values[i] >= 3:
+                    block_value[j] += (stored_blocks[i].zmax - stored_blocks[i].zmin) * (stored_blocks[i].ymax - stored_blocks[i].ymin) * (stored_blocks[i].xmax - stored_blocks[i].xmin)
+
+            if (block_surfaces[-1,0] / ((block.zmax - block.zmin) * (block.ymax - block.ymin))) > tolerance:
+                stored_blocks_values[-1]+=1
+            if (block_surfaces[-1,1] / ((block.zmax - block.zmin) * (block.ymax - block.ymin))) > tolerance:
+                stored_blocks_values[-1]+=1
+            if (block_surfaces[-1,2] / ((block.zmax - block.zmin) * (block.xmax - block.xmin))) > tolerance:
+                stored_blocks_values[-1]+=1
+            if (block_surfaces[-1,3] / ((block.zmax - block.zmin) * (block.xmax - block.xmin))) > tolerance:
+                stored_blocks_values[-1]+=1
+            if stored_blocks_values[-1] >= 3:
+                block_value[j] += (block.zmax - block.zmin) * (block.ymax - block.ymin) * (block.xmax - block.xmin)
+            block_value[j] /= container.l * container.h * container.w
 
     return block_value
         
@@ -259,13 +312,11 @@ def eval_function(blocks,space,container, params,items, weight_restriction=False
     
     pha = 0.6
 
-    qui = 0.5
-
     # print("centro de gravedad:", CG)
 
     total_old = [w * x**alpha * y**beta * z**-gamma * (1-1/(1+a**delta)) for w, x, y, z, a in zip(V,CS,V_loss,N_b, CG)]
 
-    total = [w * x**alpha * y**beta * z**-gamma * (a ** K) * (b**qui) * (c**pha) for w, x, y, z, a, b, c in zip(V,CS,V_loss,N_b, CG,DS,resistance)]
+    total = [w * x**alpha * (1-y)**beta * z**-gamma *  (b**delta) * (a ** K) * (c**pha) for w, x, y, z, a, b, c in zip(V,CS,V_loss,N_b,DS, CG,resistance)]
 
     # print("total old: ", total_old)
     # print("total    : ", total)
@@ -283,7 +334,7 @@ def eval_function(blocks,space,container, params,items, weight_restriction=False
     # print("aux space: ", aux_space)
     
     if aux_space is None:
-        print("AUX SPACE IS NONEEEEEEEEEEEEEEEE")
+        # print("AUX SPACE IS NONEEEEEEEEEEEEEEEE")
         import csv
         csv_filename = "HISTORIAL_SALIDA_APILAMIENTO.csv"
         # Abrir el archivo CSV y agregar "Aux space NONE" en una nueva fila
